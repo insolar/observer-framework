@@ -23,13 +23,6 @@ out
 ### VSCode configuration
 .vscode
 
-# wasm tests
-vm/wasm/test/data/!simple!.wasm
-vm/wasm/test/data/*.wat
-
-/testdata
-data
-
 # generated/compiled files
 /bin
 /.artifacts
