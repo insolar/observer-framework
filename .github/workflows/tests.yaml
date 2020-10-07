@@ -1,0 +1,161 @@
+name: tests
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: 0 2 * * *
+  pull_request:
+
+env:
+  GO_VERSION: 1.14
+  CI_GOMAXPROCS: 0
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: set up go ${{env.GO_VERSION}}
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{env.GO_VERSION}}
+        id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: Go mod cache setup
+        uses: actions/cache@v2
+        with:
+          path: ${{env.GOPATH}}/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Build
+        run: make all
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: /home/runner/work/observer-framework/observer-framework/go
+    steps:
+      - name: set pull_request run params
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        run: |
+          echo "::set-env name=TEST_COUNT::10"
+      - name: set scheduled run params
+        if: github.event_name == 'schedule'
+        run: |
+          echo "::set-env name=TEST_COUNT::1000"
+          echo "::set-env name=TEST_ARGS::-timeout 120m"
+      - name: set up go ${{env.GO_VERSION}}
+        uses: actions/setup-go@v1
+        id: go
+        with:
+          go-version: ${{env.GO_VERSION}}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@master
+        with:
+          path: go/src/github.com/insolar/observer-framework
+          fetch-depth: 1
+      - name: Go mod cache setup
+        uses: actions/cache@v2
+        with:
+          path: ${{env.GOPATH}}/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Test
+        run: make mod unit
+        working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: /home/runner/work/observer-framework/observer-framework/go
+    steps:
+      - name: set pull_request run params
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        run: |
+          echo "::set-env name=TEST_COUNT::10"
+      - name: set scheduled run params
+        if: github.event_name == 'schedule'
+        run: |
+          echo "::set-env name=TEST_COUNT::1000"
+          echo "::set-env name=TEST_ARGS::-timeout 240m"
+      - name: set up go ${{env.GO_VERSION}}
+        uses: actions/setup-go@v1
+        id: go
+        with:
+          go-version: ${{env.GO_VERSION}}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@master
+        with:
+          path: go/src/github.com/insolar/observer-framework
+          fetch-depth: 1
+      - name: Go mod cache setup
+        uses: actions/cache@v2
+        with:
+          path: ${{env.GOPATH}}/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Test
+        run: make mod integration
+        working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
+  test-with-coverage:
+    name: tests with coverage
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: /home/runner/work/observer-framework/observer-framework/go
+    steps:
+      - name: set up go ${{env.GO_VERSION}}
+        uses: actions/setup-go@v1
+        id: go
+        with:
+          go-version: ${{env.GO_VERSION}}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@master
+        with:
+          path: go/src/github.com/insolar/observer-framework
+          fetch-depth: 1
+      - name: Add bin to path
+        run: echo "::add-path::${{env.GOPATH}}/bin"
+      - name: Go mod cache setup
+        uses: actions/cache@v2
+        with:
+          path: ${{env.GOPATH}}/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Test
+        run: make go-acc all test-with-coverage
+        working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash) -f coverage.out -y .codecov.yml -n coverage-report
+        working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
+  golangci-lint:
+    name: Run golangci-lint
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: /home/runner/work/observer-framework/observer-framework/go
+    steps:
+      - name: set up go ${{env.GO_VERSION}}
+        uses: actions/setup-go@v1
+        id: go
+        with:
+          go-version: ${{env.GO_VERSION}}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@master
+        with:
+          path: go/src/github.com/insolar/observer-framework
+          fetch-depth: 1
+      - name: Add bin to path
+        run: echo "::add-path::${{env.GOPATH}}/bin"
+      - name: Install golangci
+        run: make all golangci
+        working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
+      - name: Run golangci-lint
+        run: make lint
+        working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
