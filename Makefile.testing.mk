@@ -18,7 +18,7 @@ integration: ## run integrations tests with race
 
 .PHONY: test-with-coverage
 test-with-coverage: ## run tests with coverage mode
-	go-acc --covermode=count --output=coverage.tmp.out ./... -- -tags "unit integration heavy_mock_integration" -count=1
+	go-acc --covermode=count --output=coverage.tmp.out ./... -- -tags "unit integration" -count=1
 	cat coverage.tmp.out | grep -v _mock.go > ${COVERPROFILE}
 	go tool cover -html=${COVERPROFILE} -o coverage.html
 
