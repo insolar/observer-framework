@@ -6,6 +6,16 @@ on:
   schedule:
     - cron: 0 2 * * *
   pull_request:
+  workflow_dispatch:
+    inputs:
+      nightlyTestCount:
+        description: 'The go test count for nightly tests'
+        required: false
+        default: '1000'
+      nightlyTestTimeout:
+        description: 'The go test timeout for nightly tests'
+        required: false
+        default: '240m'
 
 env:
   GO_VERSION: 1.14
@@ -47,8 +57,8 @@ jobs:
       - name: set scheduled run params
         if: github.event_name == 'schedule'
         run: |
-          echo "::set-env name=TEST_COUNT::1000"
-          echo "::set-env name=TEST_ARGS::-timeout 120m"
+          echo "::set-env name=TEST_COUNT::${{ github.event.inputs.nightlyTestCount }}"
+          echo "::set-env name=TEST_ARGS::-timeout ${{ github.event.inputs.nightlyTestTimeout }}"
       - name: set up go ${{env.GO_VERSION}}
         uses: actions/setup-go@v1
         id: go
@@ -82,8 +92,8 @@ jobs:
       - name: set scheduled run params
         if: github.event_name == 'schedule'
         run: |
-          echo "::set-env name=TEST_COUNT::1000"
-          echo "::set-env name=TEST_ARGS::-timeout 240m"
+          echo "::set-env name=TEST_COUNT::${{ github.event.inputs.nightlyTestCount }}"
+          echo "::set-env name=TEST_ARGS::-timeout ${{ github.event.inputs.nightlyTestTimeout }}"
       - name: set up go ${{env.GO_VERSION}}
         uses: actions/setup-go@v1
         id: go
