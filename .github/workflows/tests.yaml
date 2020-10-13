@@ -8,12 +8,12 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      nightlyTestCount:
-        description: 'The go test count for nightly tests'
+      TestCount:
+        description: 'The go test count'
         required: false
         default: '1000'
-      nightlyTestTimeout:
-        description: 'The go test timeout for nightly tests'
+      TestTimeout:
+        description: 'The go test timeout'
         required: false
         default: '240m'
 
@@ -53,12 +53,17 @@ jobs:
       - name: set pull_request run params
         if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: |
-          echo "::set-env name=TEST_COUNT::10"
+          echo "TEST_COUNT=10" >> $GITHUB_ENV
       - name: set scheduled run params
         if: github.event_name == 'schedule'
         run: |
-          echo "::set-env name=TEST_COUNT::${{ github.event.inputs.nightlyTestCount }}"
-          echo "::set-env name=TEST_ARGS::-timeout ${{ github.event.inputs.nightlyTestTimeout }}"
+          echo "TEST_COUNT=1000" >> $GITHUB_ENV
+          echo "TEST_ARGS=-timeout 240m" >> $GITHUB_ENV
+      - name: set dispatch run params
+        if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+        run: |
+          echo "TEST_COUNT=${{ github.event.inputs.TestCount }}" >> $GITHUB_ENV
+          echo "TEST_ARGS=-timeout ${{ github.event.inputs.TestTimeout }}" >> $GITHUB_ENV
       - name: set up go ${{env.GO_VERSION}}
         uses: actions/setup-go@v1
         id: go
@@ -88,12 +93,17 @@ jobs:
       - name: set pull_request run params
         if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: |
-          echo "::set-env name=TEST_COUNT::10"
+          echo "TEST_COUNT=10" >> $GITHUB_ENV
       - name: set scheduled run params
         if: github.event_name == 'schedule'
         run: |
-          echo "::set-env name=TEST_COUNT::${{ github.event.inputs.nightlyTestCount }}"
-          echo "::set-env name=TEST_ARGS::-timeout ${{ github.event.inputs.nightlyTestTimeout }}"
+          echo "TEST_COUNT=1000" >> $GITHUB_ENV
+          echo "TEST_ARGS=-timeout 240m" >> $GITHUB_ENV
+      - name: set dispatch run params
+        if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+        run: |
+          echo "TEST_COUNT=${{ github.event.inputs.TestCount }}" >> $GITHUB_ENV
+          echo "TEST_ARGS=-timeout ${{ github.event.inputs.TestTimeout }}" >> $GITHUB_ENV
       - name: set up go ${{env.GO_VERSION}}
         uses: actions/setup-go@v1
         id: go
@@ -131,7 +141,7 @@ jobs:
           path: go/src/github.com/insolar/observer-framework
           fetch-depth: 1
       - name: Add bin to path
-        run: echo "::add-path::${{env.GOPATH}}/bin"
+        run: echo "${{env.GOPATH}}/bin" >> $GITHUB_PATH
       - name: Go mod cache setup
         uses: actions/cache@v2
         with:
@@ -162,7 +172,7 @@ jobs:
           path: go/src/github.com/insolar/observer-framework
           fetch-depth: 1
       - name: Add bin to path
-        run: echo "::add-path::${{env.GOPATH}}/bin"
+        run: echo "${{env.GOPATH}}/bin" >> $GITHUB_PATH
       - name: Install golangci
         run: make all golangci
         working-directory: ${{env.GOPATH}}/src/github.com/insolar/observer-framework
