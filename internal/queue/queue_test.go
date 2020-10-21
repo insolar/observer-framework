@@ -8,6 +8,7 @@
 package queue
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -31,12 +32,24 @@ func TestRecordQueue_Pop(t *testing.T) {
 		Type:         "activate",
 		PulseNumber:  100000,
 	}
+	var result *internal.RawRecord
+	done := int32(0)
+	timeout := int32(0)
 	go func() {
-		q.entities <- expected
+		select {
+		case q.entities <- expected:
+			atomic.StoreInt32(&done, 1)
+		case <-time.After(time.Second * 10):
+			atomic.StoreInt32(&timeout, 1)
+		}
 	}()
-	time.Sleep(time.Millisecond)
-	r := q.Pop()
-	require.Equal(t, expected, r)
+	for atomic.LoadInt32(&(done)) == 0 && atomic.LoadInt32(&(timeout)) == 0 {
+		r := q.Pop()
+		if r != nil {
+			result = r
+		}
+	}
+	require.Equal(t, expected, result)
 }
 
 func TestRecordQueue_Pop_Empty(t *testing.T) {
