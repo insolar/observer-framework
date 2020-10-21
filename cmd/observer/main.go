@@ -47,8 +47,6 @@ func main() {
 	}()
 
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	select {
-	case <-stop:
-		log.Info().Msg("gracefully stopping by signal")
-	}
+	<-stop
+	log.Info().Msg("gracefully stopping by signal")
 }
