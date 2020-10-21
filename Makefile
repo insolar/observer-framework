@@ -6,6 +6,7 @@ export GO111MODULE ?= on
 export GOSUMDB ?= sum.golang.org
 export GOFLAGS ?= -mod=mod
 export GOPROXY=https://proxy.golang.org,https://goproxy.io,https://gocenter.io,direct
+export ARTIFACTS_DIR = .artifacts
 
 #.DEFAULT_GOAL := all
 
@@ -37,6 +38,11 @@ lint: ## run linter
 	${BIN_DIR}/golangci-lint --color=always run ./... -v --timeout 5m
 
 ##@ Helpers
+
+.PHONY: config
+config: ## generate config
+	mkdir -p $(ARTIFACTS_DIR)
+	go run cmd/gen-config/gen.go
 
 help: ## display help screen
 	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make \033[36m<target>\033[0m\n"}  \
