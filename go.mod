@@ -13,6 +13,7 @@ require (
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/stretchr/testify v1.5.1
 	golang.org/x/sys v0.0.0-20200602225109-6fdc65e7d980 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 )
