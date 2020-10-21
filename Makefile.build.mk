@@ -5,6 +5,7 @@ BUILD_TAGS ?= "unit integration "
 ##@ Building
 .PHONY: build
 build: ## build all applications
+	go build -ldflags "$(LDFLAGS)" -o $(BIN_DIR)/observer cmd/observer/*.go
 
 .PHONY: generate
 generate: ## generate mocks
