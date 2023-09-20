@@ -1,8 +1,4 @@
-// Copyright 2020 Insolar Network Ltd.
-// All rights reserved.
-// This material is licensed under the Insolar License version 1.0,
-// available at https://github.com/insolar/observer-framework/blob/master/LICENSE.md.
-
+//go:build unit
 // +build unit
 
 package queue

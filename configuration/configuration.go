@@ -1,12 +1,7 @@
-// Copyright 2020 Insolar Network Ltd.
-// All rights reserved.
-// This material is licensed under the Insolar License version 1.0,
-// available at https://github.com/insolar/observer-framework/blob/master/LICENSE.md.
-
 package configuration
 
 type Observer struct {
-	Profefe     Profefe
+	Profefe Profefe
 }
 
 type Profefe struct {
